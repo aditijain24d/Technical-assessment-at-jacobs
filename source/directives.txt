@@ -1,0 +1,63 @@
+Analytics Engineer Take-Home Assignment
+Welcome to the technical assessment!
+This assignment simulates a real-world engineering and analytics problem. It is designed to evaluate your T-SQL data modeling skills, your ability to leverage Python for advanced
+data engineering in a modern lakehouse architecture along with your business data analysis acumen.
+Scenario
+You are working in our Microsoft Fabric environment. The upstream engineering teams have landed raw operational data into our lakehouse delta tables.
+However, the data is unmodelled, messy, and unoptimized for reporting.
+The executive leadership team needs answers to a critical business question:
+
+Which customer industries are generating sustainable revenue versus those consuming an unsustainable volume of our engineering and support resources?
+
+Your goal is to build a refined data pipeline and deliver a final analytical summary that bridges the gap between raw data and executive strategy.
+
+Provided Datasets : You have access to three tables in the lakehouse (assume standard MS SQL / T-SQL syntax for SQL operations):
+1. dbo.raw_companies: Internal CRM registry of enterprise clients.
+    Fields: company_id (VARCHAR), company_name (VARCHAR), created_at (DATETIME), industry (VARCHAR)
+2. dbo.raw_subscriptions: Subscription history logs.
+    Fields: subscription_id (VARCHAR), company_id (VARCHAR), plan_name (VARCHAR), monthly_amount (DECIMAL), status (VARCHAR: 'active', 'cancelled'), start_date (DATE), end_date (DATE)
+3. dbo.raw_support_tickets: Support system dumps.
+    Fields: ticket_id (VARCHAR), company_id (VARCHAR), created_at (DATETIME), resolution_time_hours (DECIMAL), status (VARCHAR: 'solved', 'open'), telemetry_metadata (VARCHAR - Messy
+    JSON string containing browser, OS, and priority info).
+
+Assignment
+Task 1: T-SQL Data Modeling (Fabric Data Warehouse)
+    Write clean, production-grade T-SQL to transform these raw tables into a clean, dimensional star schema. Please implement a decoupled staging layer and a final integrated analytical
+    wide table or fact table (e.g., fact_company_monthly_metrics). Final output should support analysis at Company × Month grain.
+    Business Logic Constraints:
+    1. Monthly Recurring Revenue (MRR): Extract the revenue generated only for months where the subscription status was active. Ensure MRR is correctly represented across the lifespan of
+    each subscription (including multi-month subscriptions).
+    2. Support Load Score: Calculate a custom metric to quantify support weight. Please combine both ticket volume and engineering effort (e.g. resolution hours):
+
+Task 2: Python Notebook Case Study (Fabric Lakehouse)
+Switching roles to a notebook-based workflow, open a Python environment (pandas or PySpark) to handle the unstructured elements of our data and perform advanced cohort calculations:
+    1.  Extract the nested priority (High, Medium, Low) from the messy telemetry_metadata JSON string column in dbo.raw_support_tickets.
+    2.  Write a Python function to flag any company that experienced a month-over-month (MoM) spike in High-Priority tickets greater than 200%. Ensure your logic handles cases where
+    the previous month has zero observations.
+    3.  Merge this back into a clean data frame and outline how you would save it back as a Delta table in the Fabric Lakehouse.
+
+Task 3: Data Analysis & Business Strategy
+Do not just move the data, interpret it. Based on the data model you designed, write a short analytical memo answering the following questions for our executive team:
+    1. If an industry has a rapidly growing MRR but its Support Load Score is increasing at twice that rate, what strategy should the account management team take?
+    2. Looking at your final data layout, how would you define a "toxic" customer segment? What combination of data thresholds would you use to flag them automatically?
+Your answer should include both a definition (metrics/thresholds) and a recommended action.
+
+Task 4: Testing & Documentation
+Provide a brief README.md file including:
+- T-SQL or dbt-style verification queries ensuring primary keys are unique and financial fields contain no negative values.
+- A final T-SQL query that an analyst can copy/paste into Fabric to find the Top 5 most expensive industries to support relative to their MRR contribution.
+
+Submission Guidelines
+1. You have 5 days to complete the assignment (Expected effort: 2-3 hours).
+2. Deliverables: A Git repository link or zip file containing your .sql files, a Python notebook (.ipynb or raw script), and your README.md.
+3. In addition, you can include a 3-minute video walkthrough sharing your screen, explaining your modeling choices and your Python case study logic.
+This is optional, as all assignments will be assessed, and you will be invited to a short (30 mins) technical review where you will provide a live walkthrough sharing your screen.
+The session will also include a live modification challenge, where you will be asked to alter your code on the spot.
+
+Next Round
+Successful submissions move to a Presentation/final interview.
+We treat our Analytics Engineers as strategic partners, not just ticket-takers. Therefore, you should treat the first 10 minutes of this interview as a formal presentation
+to our Executive Team (played by your interviewers). Present your findings from Task 3: Data Analysis & Business Strategy.
+Explain which customer segments are "toxic," which industries are driving sustainable growth, and your strategic recommendations for management.
+You may use 2-3 slides, or present cleanly from a visualisation/dashboard or your markdown file.
+Your goal is to translate your data model's insights into clear, actionable business metrics for non-technical stakeholders.

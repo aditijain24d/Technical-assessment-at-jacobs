@@ -1,0 +1,11 @@
+subscription_id,company_id,plan_name,monthly_amount,status,start_date,end_date
+S-001,C-101,Enterprise Gold,1500.00,active,2025-11-15,
+S-002,C-102,Growth Tier,400.00,cancelled,2025-12-10,2026-03-31
+S-003,C-102,Enterprise Diamond,2500.00,active,2026-04-01,
+S-004,C-103,Basic Startup,150.00,cancelled,2026-01-05,2026-05-12
+S-005,C-104,Growth Tier,500.00,active,2026-01-15,
+S-006,C-105,Elite Platinum,8500.00,active,2026-01-22,
+S-007,C-106,Growth Tier,450.00,active,2026-02-01,
+S-008,C-107,Enterprise Gold,1200.00,active,2026-02-15,
+S-009,C-108,Growth Tier,400.00,active,2026-03-01,
+S-010,C-110,Basic Startup,200.00,active,2026-03-15,
