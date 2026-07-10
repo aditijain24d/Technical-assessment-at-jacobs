@@ -29,15 +29,16 @@ Gold-layer build the Company × Month analytical table required by the assignmen
 
 ## Run pipeline
 
-From `Jacobs/solution/`:
+From `Technical-assessment-at-jacobs/solution/runbook/`:
 
 ```bash
 python3 run_ingestion.py          # bronze layer
 python3 run_silver.py             # silver layer
 python3 run_gold.py               # gold layer 
-python3 test.py                   # validate CSV 
+
+#python3 test/test.py                   # validate CSV 
 ```
-Delta files are written to `Jacobs/lakehouse/<schema>/<table_name>/`.
+Delta files are written to `Technical-assessment-at-jacobs/lakehouse/<schema>/<table_name>/`.
 
 ## Fabric notebook usage
 In Microsoft Fabric, reuse the same read schemas and table names. Replace local paths with your lakehouse volume path and use the existing `spark` session instead of `get_spark()`.
