@@ -13,6 +13,5 @@ def get_spark(app_name = "jacobs-ingestion"):
             "org.apache.spark.sql.delta.catalog.DeltaCatalog",
         )
         .config("spark.sql.warehouse.dir", "/Users/aditijain/Technical-assessment-at-jacobs/lakehouse")
-                #"spark-warehouse")
     )
     return configure_spark_with_delta_pip(builder).getOrCreate()

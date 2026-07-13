@@ -16,6 +16,7 @@ Gold-layer build the Company × Month analytical table required by the assignmen
 | `silver.companies` | Cleaned company dimension |
 | `silver.subscriptions` | Cleaned subscription history |
 | `silver.support_tickets` | Tickets with parsed JSON (`priority`, `browser`, `os`) |
+| `silver.calendar` | Calendar table for monthly matrix |
 
 ## Gold table
 | Table                    | Purpose |
@@ -28,15 +29,15 @@ Gold-layer build the Company × Month analytical table required by the assignmen
 - **High-priority MoM spike**: Flag when high-priority tickets increase by more than 200% month-over-month. If the previous month had zero high-priority tickets and the current month has any, the row is flagged.
 
 ## Run pipeline
-
-From `Technical-assessment-at-jacobs/solution/runbook/`:
+From `Technical-assessment-at-jacobs/solution/`:
 
 ```bash
+cd runbook/
+pwd
 python3 run_ingestion.py          # bronze layer
 python3 run_silver.py             # silver layer
 python3 run_gold.py               # gold layer 
-
-#python3 test/test.py                   # validate CSV 
+python3 test/test.py              # validate CSV 
 ```
 Delta files are written to `Technical-assessment-at-jacobs/lakehouse/<schema>/<table_name>/`.
 

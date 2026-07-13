@@ -13,74 +13,54 @@ from solution.helpers.spark_session import get_spark
 TABLE_NAME = "company_monthly_metrics"
 
 def build_company_mrr(spark):
-    df_subscriptions = spark.table(silver_table_name("subscriptions"))
-    df_subscriptions.createOrReplaceTempView("subscriptions")
+    spark.table(silver_table_name("subscriptions")).createOrReplaceTempView("subscriptions")
+    sql_stmt = ("select company_id, trunc(start_date,'month') as start_date, trunc(coalesce(end_date,now()),'month') as end_date, sum(monthly_amount) as mrr\
+                from subscriptions\
+                group by company_id, start_date, end_date")
 
-    df_companies = spark.table(silver_table_name("companies"))
-    df_companies.createOrReplaceTempView("companies")
-
-    sql_stmt = (f"select c.company_id, trunc(s.start_date,'month') as metric_month, \
-            s.monthly_amount * floor(months_between(coalesce(s.end_date,current_date()), s.start_date)) as MRR \
-            from companies c join subscriptions s on c.company_id = s.company_id \
-            where s.status ='active'")
     return spark.sql(f"{sql_stmt}")
 
 def build_support_metrics(spark):
-    df_tickets = spark.table(silver_table_name("support_tickets"))
-    df_tickets.createOrReplaceTempView("tickets")
+    spark.table(silver_table_name("support_tickets")).createOrReplaceTempView("tickets")
     sql_stmt = ("with t as(\
-                   select company_id, trunc(created_at,'month') as metric_month, ticket_id, resolution_time_hours, CASE WHEN upper(priority) == 'HIGH' THEN 1 ELSE 0 END as high_priority_ticket\
-                   from tickets)\
-                   select company_id, metric_month, count(ticket_id) as ticket_count, sum(coalesce(resolution_time_hours,0)) as total_resolution_hours, \
-                   sum(high_priority_ticket) as total_priority_ticket_count\
-                   from t group by company_id, metric_month")
-    result = spark.sql(f"{sql_stmt}")
-    return result.withColumn("support_load_score",(F.col("total_resolution_hours")+F.col("ticket_count")))
+                           select company_id, trunc(created_at,'month') as ticket_month, ticket_id, resolution_time_hours,\
+                           CASE WHEN UPPER(priority) != 'HIGH' THEN 0 ELSE 1 END as priority_ticket\
+                           from tickets)\
+                           select company_id, ticket_month, sum(priority_ticket) as priority_tickets, \
+                           count(ticket_id) + sum(coalesce(resolution_time_hours,0)) as support_load_score\
+                           from t group by company_id, ticket_month")
+
+    return spark.sql(f"{sql_stmt}")
 
 def apply_high_priority_spike_flags(metrics_df,spark):
     metrics_df.createOrReplaceTempView("metrics_df")
-    sql_stmt = ("with cte as( \
-            select company_id, company_name, metric_month, industry, mrr, ticket_count, total_resolution_hours, total_priority_ticket_count, support_load_score, \
-            lag(total_priority_ticket_count,1) over(partition by company_id order by metric_month) as prev_high_priority_ticket_count from metrics_df)\
-            select company_id, company_name, metric_month, industry, mrr, ticket_count, total_resolution_hours, total_priority_ticket_count, support_load_score,\
-            CASE \
-            WHEN prev_high_priority_ticket_count == 0 OR prev_high_priority_ticket_count is NULL THEN 0 \
-            WHEN prev_high_priority_ticket_count > 0 THEN (total_priority_ticket_count - prev_high_priority_ticket_count)/prev_high_priority_ticket_count * 100 END as high_priority_mom_pct_spike\
-            from cte")
+    sql_stmt = ("with df as( \
+                select company_id, company_name, industry, metric_month, mrr, priority_tickets, support_load_score, \
+                lag(priority_tickets,1) over(partition by company_id order by metric_month) as prev_priority_tickets from metrics_df)\
+                select company_id, company_name, industry, metric_month, mrr, priority_tickets, support_load_score,\
+                CASE \
+                WHEN prev_priority_tickets == 0 OR prev_priority_tickets is NULL THEN 0 \
+                WHEN prev_priority_tickets > 0 THEN (priority_tickets - prev_priority_tickets)/prev_priority_tickets * 100 END as high_priority_mom_pct_spike\
+                from df")
     result = spark.sql(f"{sql_stmt}")
     return result.withColumn("high_priority_mom_spike_flag", F.col("high_priority_mom_pct_spike") > 200)
 
 def build_company_monthly_metrics(spark):
     spark = spark or get_spark("gold-company-monthly-metrics")
 
-    companies = spark.table(silver_table_name("companies"))
-    company_mrr = build_company_mrr(spark)
-    support_metrics = build_support_metrics(spark)
+    spark.table(silver_table_name("companies")).createOrReplaceTempView("companies")
+    spark.table(silver_table_name("calendar")).createOrReplaceTempView("cal")
+    build_company_mrr(spark).createOrReplaceTempView("company_mrr")
+    build_support_metrics(spark).createOrReplaceTempView("support_metrics")
 
-    all_months = (
-        company_mrr.select("metric_month")
-        .union(support_metrics.select("metric_month"))
-        .distinct()
-    )
-    spine = companies.select("company_id").crossJoin(all_months)
+    sql_stmt="select c.company_id, c.company_name, c.industry, cal.months as metric_month, cm.mrr, sm.priority_tickets, sm.support_load_score\
+            from companies c \
+            cross join cal \
+            left join company_mrr cm on c.company_id = cm.company_id  and cal.months between cm.start_date and cm.end_date\
+            left join support_metrics sm on c.company_id = sm.company_id and cal.months = sm.ticket_month\
+            order by c.company_id, cal.months"
+    metrics_df = spark.sql(f"{sql_stmt}").fillna(0, subset=["mrr", "support_load_score", "priority_tickets"])
 
-    metrics_df = (
-        spine.join(companies, on="company_id", how="left")
-        .join(company_mrr, on=["company_id", "metric_month"], how="left")
-        .join(support_metrics, on=["company_id", "metric_month"], how="left")
-        .fillna(
-            0,
-            subset=[
-                "mrr",
-                "ticket_count",
-                "total_resolution_hours",
-                "total_priority_ticket_count",
-                "support_load_score",
-            ],
-        )
-    )
-
-    metrics_df=metrics_df.drop("created_at")
     final_df = apply_high_priority_spike_flags(metrics_df,spark)
     final_df.select(
         "company_id",
@@ -88,9 +68,7 @@ def build_company_monthly_metrics(spark):
         "metric_month",
         "industry",
         "mrr",
-        "ticket_count",
-        "total_resolution_hours",
-        "total_priority_ticket_count",
+        "priority_tickets",
         "support_load_score",
         "high_priority_mom_pct_spike",
         "high_priority_mom_spike_flag",

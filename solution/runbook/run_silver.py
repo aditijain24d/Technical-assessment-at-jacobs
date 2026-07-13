@@ -16,6 +16,7 @@ def run_all_silver_transforms():
         ("companies", "01_transform_companies.py", "transform_companies"),
         ("subscriptions", "02_transform_subscriptions.py", "transform_subscriptions"),
         ("support_tickets", "03_transform_support_tickets.py", "transform_support_tickets"),
+        ("calendar", "04_create_calendar.py", "create_calendar"),
     ]
 
     for table_name, script_name, function_name in jobs:
