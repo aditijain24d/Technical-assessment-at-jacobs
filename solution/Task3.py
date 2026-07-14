@@ -11,7 +11,6 @@ dangerous to long-term health.
 Combination of MRR and Support Cost Ratio, this captures segments where the cost-to-serve is unsustainable.
 Metric: Support Cost Load per MRR = (Total Support Cost ) / ( MRR).
 Threshold: Flag as toxic if Support Cost per MRR > 0.30 (i.e., >30% of revenue is consumed by support)'''
-from pyspark.sql.functions import count
 
 from solution.helpers.gold_helpers import gold_table_name
 from solution.helpers.spark_session import get_spark

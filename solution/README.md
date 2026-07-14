@@ -29,15 +29,13 @@ Gold-layer build the Company × Month analytical table required by the assignmen
 - **High-priority MoM spike**: Flag when high-priority tickets increase by more than 200% month-over-month. If the previous month had zero high-priority tickets and the current month has any, the row is flagged.
 
 ## Run pipeline
-From `Technical-assessment-at-jacobs/solution/`:
+cd `Technical-assessment-at-jacobs/solution/` :
 
 ```bash
-cd runbook/
-pwd
-python3 run_ingestion.py          # 1_bronze layer
-python3 run_silver.py             # 2_silver layer
+python3 run_ingestion.py          # 1_bronze layer 
+python3 run_silver.py             # 2_silver layer 
 python3 run_gold.py               # 3_gold layer 
-python3 test/test.py              # validate CSV 
+python3 test.py                   # validate formats 
 ```
 Delta files are written to `Technical-assessment-at-jacobs/lakehouse/<schema>/<table_name>/`.
 
