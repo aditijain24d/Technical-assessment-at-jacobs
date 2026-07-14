@@ -34,9 +34,9 @@ From `Technical-assessment-at-jacobs/solution/`:
 ```bash
 cd runbook/
 pwd
-python3 run_ingestion.py          # bronze layer
-python3 run_silver.py             # silver layer
-python3 run_gold.py               # gold layer 
+python3 run_ingestion.py          # 1_bronze layer
+python3 run_silver.py             # 2_silver layer
+python3 run_gold.py               # 3_gold layer 
 python3 test/test.py              # validate CSV 
 ```
 Delta files are written to `Technical-assessment-at-jacobs/lakehouse/<schema>/<table_name>/`.

@@ -1,5 +1,5 @@
 """
-Ingest raw_subscriptions into bronze delta table
+Ingest raw_subscriptions into 1_bronze delta table
 fields: subscription_id, company_id, plan_name, monthly_amount, status, start_date, end_date
 """
 from pyspark.sql.types import DateType, DecimalType, StringType, StructField, StructType

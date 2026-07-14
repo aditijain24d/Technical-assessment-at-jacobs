@@ -7,9 +7,9 @@ LAKEHOUSE_DIR = PROJECT_ROOT / "lakehouse"
 
 # Fabric / Unity Catalog naming (adjust catalog_name in Fabric workspace if needed)
 catalog_name = "jacobs"
-bronze_schema = "bronze"
-silver_schema = "silver"
-gold_schema = "gold"
+bronze_schema = "1_bronze"
+silver_schema = "2_silver"
+gold_schema = "3_gold"
 
 # Raw CSV landing files (provided in source/)
 SOURCE_FILES = {

@@ -5,6 +5,8 @@ Includes:
   - Support Load Score (ticket volume + resolution hours)
   - High-priority ticket MoM spike flag (>200%, zero-safe)
 """
+from functools import reduce
+
 from pyspark.sql import functions as F
 from solution.helpers.silver_helpers import silver_table_name
 from solution.helpers.gold_helpers import write_to_gold, gold_table_name
@@ -43,10 +45,10 @@ def apply_high_priority_spike_flags(metrics_df,spark):
                 WHEN prev_priority_tickets > 0 THEN (priority_tickets - prev_priority_tickets)/prev_priority_tickets * 100 END as high_priority_mom_pct_spike\
                 from df")
     result = spark.sql(f"{sql_stmt}")
-    return result.withColumn("high_priority_mom_spike_flag", F.col("high_priority_mom_pct_spike") > 200)
+    return result.withColumn("high_priority_mom_spike_flag", F.col("high_priority_mom_pct_spike") > 200).filter(F.col("high_priority_mom_pct_spike")>=0)
 
 def build_company_monthly_metrics(spark):
-    spark = spark or get_spark("gold-company-monthly-metrics")
+    spark = spark or get_spark("3_gold-company-monthly-metrics")
 
     spark.table(silver_table_name("companies")).createOrReplaceTempView("companies")
     spark.table(silver_table_name("calendar")).createOrReplaceTempView("cal")

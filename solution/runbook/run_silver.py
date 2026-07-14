@@ -1,17 +1,17 @@
-"""Run all silver-layer transforms."""
+"""Run all 2_silver-layer transforms."""
 import importlib.util
 from solution.config.config import SOLUTION_DIR
 from solution.helpers.spark_session import get_spark
 
 def load_silver_module(filename):
-    module_path = SOLUTION_DIR/"silver"/filename
+    module_path = SOLUTION_DIR/"2_silver"/filename
     spec = importlib.util.spec_from_file_location(module_path.stem, module_path)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
 
 def run_all_silver_transforms():
-    spark = get_spark("jacobs-silver-transforms")
+    spark = get_spark("jacobs-2_silver-transforms")
     jobs = [
         ("companies", "01_transform_companies.py", "transform_companies"),
         ("subscriptions", "02_transform_subscriptions.py", "transform_subscriptions"),
@@ -20,7 +20,7 @@ def run_all_silver_transforms():
     ]
 
     for table_name, script_name, function_name in jobs:
-        print(f"Building silver.{table_name}...")
+        print(f"Building 2_silver.{table_name}...")
         module = load_silver_module(script_name)
         df = getattr(module, function_name)(spark)
         print(f"  rows loaded: {df.count()}")

@@ -1,5 +1,5 @@
 """
-Ingest raw_support_tickets into bronze delta table
+Ingest raw_support_tickets into 1_bronze delta table
 fields: ticket_id, company_id, created_at, resolution_time_hours, status, telemetry_metadata
 """
 from pyspark.sql.types import DecimalType, StringType, StructField, StructType, TimestampType

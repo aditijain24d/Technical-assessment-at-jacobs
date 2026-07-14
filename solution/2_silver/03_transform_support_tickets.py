@@ -1,4 +1,4 @@
-"""Build silver.support_tickets with parsed telemetry metadata."""
+"""Build 2_silver.support_tickets with parsed telemetry metadata."""
 from pyspark.sql import functions as F
 from pyspark.sql.types import StringType, StructField, StructType
 from solution.helpers.silver_helpers import bronze_table_name, silver_table_name, write_to_silver
@@ -14,7 +14,7 @@ TELEMETRY_SCHEMA = StructType(
 )
 
 def transform_support_tickets(spark):
-    spark = spark or get_spark("silver-support-tickets")
+    spark = spark or get_spark("2_silver-support-tickets")
 
     tickets_df = (
         spark.table(bronze_table_name("raw_support_tickets"))

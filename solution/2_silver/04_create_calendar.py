@@ -1,4 +1,4 @@
-"""Build silver.calendar"""
+"""Build 2_silver.calendar"""
 from pyspark.sql import functions as F
 from solution.helpers.silver_helpers import silver_table_name, write_to_silver
 from solution.helpers.spark_session import get_spark
@@ -6,7 +6,7 @@ from solution.helpers.spark_session import get_spark
 TABLE_NAME = "calendar"
 
 def create_calendar(spark):
-    spark = spark or get_spark("silver-calendar")
+    spark = spark or get_spark("2_silver-calendar")
     df_cal = spark.table(silver_table_name("subscriptions")).select(F.trunc("start_date","month").alias("start_date"),
                                                                     F.coalesce(F.col("end_date"),F.trunc(F.now(),'month')).alias("end_date"))
     min_epochs = df_cal.select(F.min("start_date").alias("min_d"), F.max("end_date").alias("max_d")).first()

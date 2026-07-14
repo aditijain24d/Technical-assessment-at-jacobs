@@ -1,10 +1,10 @@
-"""Build silver.subscriptions from bronze.raw_subscriptions."""
+"""Build 2_silver.subscriptions from 1_bronze.raw_subscriptions."""
 from solution.helpers.silver_helpers import bronze_table_name, silver_table_name, write_to_silver
 from solution.helpers.spark_session import get_spark
 TABLE_NAME = "subscriptions"
 
 def transform_subscriptions(spark):
-    spark = spark or get_spark("silver-subscriptions")
+    spark = spark or get_spark("2_silver-subscriptions")
     subscriptions_df = spark.table(bronze_table_name("raw_subscriptions")).select(
         "subscription_id",
         "company_id",

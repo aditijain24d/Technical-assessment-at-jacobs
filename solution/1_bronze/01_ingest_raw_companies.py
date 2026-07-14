@@ -1,5 +1,5 @@
 """
-Ingest raw_companies into bronze delta table
+Ingest raw_companies into 1_bronze delta table
 fields: company_id, company_name, created_at, industry
 """
 from pyspark.sql.types import StringType, StructField, StructType, TimestampType
