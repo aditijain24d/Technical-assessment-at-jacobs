@@ -47,7 +47,7 @@ Each bronze ingest script:
 2. Adds `ingestion_timestamp` and `source_file` metadata columns
 3. Writes to a Delta table in the bronze schema
 
-Silver PySpark scripts read from bronze/silver Delta tables and apply the transforms above.
+Silver/Gold PySpark scripts read from bronze/silver Delta tables and apply the transforms above.
 
 ## Configuration
 Update `config.py` if your Fabric catalog name or source file locations differ.
